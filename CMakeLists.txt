@@ -1,12 +1,40 @@
 include_guard(GLOBAL)
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
-project("thezhe/templatelists")
-# Module
-function(thezhe_templatelists)
-    message(STATUS "Hello world!")
+project("thezhe/content.txt")
+# Interface
+function(thezhe_contents_txt)
+    file(STRINGS "content.lock" contents)
+    include(FetchContent)
+    foreach(content IN LISTS contents)
+        string(REGEX MATCH "^[^@]+@[^/@]+$" is_valid "${content}")
+        if(NOT is_valid)
+            message(FATAL_ERROR "${content} is invalid")
+        endif()
+        string(REGEX MATCHALL "/" slashes "${content}")
+        list(LENGTH slashes slash_count)
+        if(${slash_count} EQUAL 1)
+            set(is_github TRUE)
+        else()
+            set(is_github FALSE)
+        endif()
+        string(REGEX REPLACE "@" ";" repo_tag "${content}")
+        list(GET repo_tag 0 repo)
+        list(GET repo_tag 1 ref)
+        if(is_github)
+            # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-using-a-public-action
+            set(repo "https://github.com/${repo}.git")
+        endif()
+        cmake_path(GET repo STEM LAST_ONLY repo_name)
+        FetchContent_Declare(
+            "${repo_name}"
+            GIT_REPOSITORY "${repo}"
+            GIT_TAG "${ref}"
+            GIT_SHALLOW TRUE)
+        FetchContent_MakeAvailable("${repo_name}")
+    endforeach()
 endfunction()
 # Test
 if(NOT PROJECT_IS_TOP_LEVEL)
     return()
 endif()
-thezhe_templatelists()
+thezhe_contents_txt("contents.txt")
