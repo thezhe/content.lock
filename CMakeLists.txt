@@ -1,40 +1,35 @@
 include_guard(GLOBAL)
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
-project("thezhe/content.txt")
-# Interface
-function(thezhe_contents_txt)
-    file(STRINGS "content.lock" contents)
+project("thezhe/content_lock")
+# Fetch content using `content.lock`
+#[[
+`content.lock` format:
+    <git-url-0>@<hash-0>
+    <git-url-1>@<hash-1>
+    ...
+    <git-url-N>@<hash-N>
+]]
+function(thezhe_content_lock)
     include(FetchContent)
-    foreach(content IN LISTS contents)
-        string(REGEX MATCH "^[^@]+@[^/@]+$" is_valid "${content}")
-        if(NOT is_valid)
-            message(FATAL_ERROR "${content} is invalid")
-        endif()
-        string(REGEX MATCHALL "/" slashes "${content}")
-        list(LENGTH slashes slash_count)
-        if(${slash_count} EQUAL 1)
-            set(is_github TRUE)
-        else()
-            set(is_github FALSE)
-        endif()
-        string(REGEX REPLACE "@" ";" repo_tag "${content}")
-        list(GET repo_tag 0 repo)
-        list(GET repo_tag 1 ref)
-        if(is_github)
-            # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-using-a-public-action
-            set(repo "https://github.com/${repo}.git")
-        endif()
-        cmake_path(GET repo STEM LAST_ONLY repo_name)
+    set(filename "content.lock")
+    # Reconfigure on change
+    configure_file("${filename}" "_${filename}" COPYONLY)
+    file(STRINGS "${filename}" entries)
+    foreach(entry IN LISTS entries)
+        string(REGEX REPLACE "@" ";" entry_tokens "${entry}")
+        list(GET entry_tokens 0 entry_url)
+        list(GET entry_tokens 1 entry_ref)
+        cmake_path(GET entry_url STEM LAST_ONLY entry_repo_name)
         FetchContent_Declare(
-            "${repo_name}"
-            GIT_REPOSITORY "${repo}"
-            GIT_TAG "${ref}"
+            "${entry_repo_name}"
+            GIT_REPOSITORY "${entry_url}"
+            GIT_TAG "${entry_ref}"
             GIT_SHALLOW TRUE)
-        FetchContent_MakeAvailable("${repo_name}")
+        FetchContent_MakeAvailable("${entry_repo_name}")
     endforeach()
 endfunction()
 # Test
 if(NOT PROJECT_IS_TOP_LEVEL)
     return()
 endif()
-thezhe_contents_txt("contents.txt")
+thezhe_content_lock()

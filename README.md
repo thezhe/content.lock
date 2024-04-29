@@ -1,27 +1,21 @@
-# content.lock
+# content_lock
 
-Fetch content using a content-lock file
+Declaratively fetch content
 
 ## Usage
 
-```CMake
-# CMakeLists.txt
+### CMakeLists.txt
 
+```CMake
 include(FetchContent)
 FetchContent_Declare(
-    contents
-    GIT_REPOSITORY https://github.com/thezhe/content.lock.git
+    content_lock
+    GIT_REPOSITORY https://github.com/thezhe/content_lock.git
     GIT_TAG <hash>
     GIT_SHALLOW TRUE)
-FetchContent_MakeAvailable(contents)
-
-thezhe_content_lock("contents.txt")
+FetchContent_MakeAvailable(content_lock)
+thezhe_content_lock()
 ```
-
-`contents.txt` includes newline-delimited repos in the following formats:
-
-- `<owner>/<repo>@<hash>`
-- `<url>.git@<hash>`
 
 ## Versioning
 

@@ -1,7 +1,7 @@
 # Changelog
 
-## v0.1.0 - 2024/XX/XX
+## v0.1.0 - 2024/04/29
 
 ### Added
 
-- `thezhe_contents_txt` function
+- `thezhe_content_lock`
