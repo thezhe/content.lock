@@ -13,7 +13,7 @@ project("thezhe/content_lock")
 function(thezhe_content_lock)
     set(filename "content.lock")
     # Reconfigure on change
-    configure_file("${filename}" "_${filename}" COPYONLY)
+    configure_file("${filename}" "_cache_thezhe_content_lock" COPYONLY)
     file(STRINGS "${filename}" entries)
     foreach(entry IN LISTS entries)
         string(REGEX REPLACE "@" ";" entry_tokens "${entry}")
