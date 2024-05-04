@@ -13,13 +13,14 @@ project("thezhe/content_lock")
 function(thezhe_content_lock)
     set(filename "content.lock")
     # Reconfigure on change
-    configure_file("${filename}" "_cache_thezhe_content_lock" COPYONLY)
+    configure_file("${filename}" ".cache/thezhe/content_lock" COPYONLY)
     file(STRINGS "${filename}" entries)
     foreach(entry IN LISTS entries)
         string(REGEX REPLACE "@" ";" entry_tokens "${entry}")
         list(GET entry_tokens 0 entry_url)
         list(GET entry_tokens 1 entry_hash)
         cmake_path(GET entry_url STEM LAST_ONLY entry_repo_name)
+        message(STATUS "thezhe_content_lock: Fetching \"${entry_repo_name}\"")
         FetchContent_Declare(
             "${entry_repo_name}"
             GIT_REPOSITORY "${entry_url}"
